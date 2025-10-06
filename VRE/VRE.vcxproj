@@ -147,12 +147,15 @@
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanRenderApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\Singleton.h" />
     <ClInclude Include="src\Core\Window.h" />
+    <ClInclude Include="src\Renderer\RenderApi.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
+    <ClInclude Include="src\Renderer\VulkanRenderApi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

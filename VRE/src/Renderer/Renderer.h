@@ -1,14 +1,19 @@
 #pragma once
 
+#include <memory>
+#include "RenderApi.h"
+#include "../Core/Singleton.h"
+
 namespace VRE {
-	class Renderer {
+	class Renderer : public Singleton<Renderer>{
 		public:
-			Renderer();
-			~Renderer();
 			void Run();
 
 		private:
-			void InitVulkan();
+			void Init();
 			void CleanUp();
+
+		private:
+			std::unique_ptr<RenderApi> m_RenderApi;
 	};
 }

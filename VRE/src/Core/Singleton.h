@@ -9,6 +9,8 @@ namespace VRE
 			//Don't allow copy constructor/assignment
 			Singleton(const Singleton<T>&) = delete;
 			Singleton& operator=(const Singleton<T>&) = delete;
+			Singleton(const Singleton<T>&&) = delete;
+			Singleton&& operator=(const Singleton<T>&&) = delete;
 
 		protected:
 			static T* s_Instance;

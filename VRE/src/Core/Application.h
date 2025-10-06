@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "../Core/Window.h"
+#include "../Renderer/Renderer.h"
 #include "Singleton.h"
 
 namespace VRE
@@ -17,5 +18,6 @@ namespace VRE
 
 		private:
 			std::unique_ptr<Window> m_Window;
+			std::unique_ptr<Renderer> m_Renderer;
 	};
 }
