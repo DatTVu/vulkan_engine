@@ -8,9 +8,9 @@ namespace VRE {
 	class Renderer : public Singleton<Renderer>{
 		public:
 			void Run();
+			void Init();
 
 		private:
-			void Init();
 			void CleanUp();
 
 		private:

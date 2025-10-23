@@ -14,6 +14,7 @@ namespace VRE
 	{
 		m_Window = std::make_unique<Window>(WindowInfo(s_WINDOW_TITLE, s_WINDOW_WIDTH, s_WINDOW_HEIGHT));
 		m_Renderer = std::make_unique<Renderer>();
+		m_Renderer->Init();
 	}
 
 	void Application::Run()

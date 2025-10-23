@@ -11,7 +11,6 @@ namespace VRE {
 
 	void Renderer::Run() 
 	{
-		Init();
 		CleanUp();
 	}
 
@@ -21,7 +20,8 @@ namespace VRE {
 		m_RenderApi = std::make_unique<VulkanRenderApi>();
 #elif USE_OPENGL_RENDER_API
 		m_RenderApi = std::make_unique<RenderApi>();
-#endif // USE_VULKAN_RENDER_API		
+#endif // USE_VULKAN_RENDER_API
+		m_RenderApi->Init();
 	}
 
 	void Renderer::CleanUp() 

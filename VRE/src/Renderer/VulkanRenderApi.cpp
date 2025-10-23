@@ -22,6 +22,8 @@
 #define GLFW_INCLUDE_VULKAN // REQUIRED only for GLFW CreateWindowSurface.
 #include <GLFW/glfw3.h>
 
+#include "../Core/Window.h"
+
 namespace VRE
 {
     const std::vector validationLayers = {
@@ -38,6 +40,7 @@ namespace VRE
 	{
 		m_API = VRE::RenderApi::API::Vulkan;
 		CreateInstance();
+        CreateSurface();
 		PickPhysicalDevice(); 
         CreateLogicalDevice();
 	}
@@ -156,12 +159,52 @@ namespace VRE
         std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
 
         // get the first index into queueFamilyProperties which supports graphics
-        auto graphicsQueueFamilyProperty = std::ranges::find_if( queueFamilyProperties, []( auto const & qfp )
+        auto graphicsQueueFamilyProperty = std::ranges::find_if(queueFamilyProperties, [](auto const & qfp)
                         { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != static_cast<vk::QueueFlags>(0); } );
 		assert(graphicsQueueFamilyProperty != queueFamilyProperties.end() && "No graphics queue family found!");
-
         
-        auto graphicsIndex = static_cast<uint32_t>( std::distance( queueFamilyProperties.begin(), graphicsQueueFamilyProperty ) );
+        auto graphicsIndex = static_cast<uint32_t>(std::distance(queueFamilyProperties.begin(), graphicsQueueFamilyProperty));
+
+        // determine a queueFamilyIndex that supports present
+        // first check if the graphicsIndex is good enough
+        auto presentIndex = m_PhysicalDevice.getSurfaceSupportKHR(graphicsIndex, *m_Surface)
+                                       ? graphicsIndex
+                                       : static_cast<uint32_t>(queueFamilyProperties.size());
+
+        if (presentIndex == queueFamilyProperties.size())
+        {
+            // the graphicsIndex doesn't support present -> look for another family index that supports both
+            // graphics and present
+            for (size_t i = 0; i < queueFamilyProperties.size(); i++)
+            {
+                if ((queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) && 
+                    m_PhysicalDevice.getSurfaceSupportKHR( static_cast<uint32_t>(i), *m_Surface))
+                {
+                    graphicsIndex = static_cast<uint32_t>(i);
+                    presentIndex  = graphicsIndex;
+                    break;
+                }
+            }
+
+            if (presentIndex == queueFamilyProperties.size())
+            {
+                // there's nothing like a single family index that supports both graphics and present -> look for another
+                // family index that supports present
+                for (size_t i = 0; i < queueFamilyProperties.size(); ++i)
+                {
+                    if (m_PhysicalDevice.getSurfaceSupportKHR(static_cast<uint32_t>(i), *m_Surface))
+                    {
+                        presentIndex = static_cast<uint32_t>(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ((graphicsIndex == queueFamilyProperties.size()) || (presentIndex == queueFamilyProperties.size()))
+        {
+            throw std::runtime_error( "Could not find a queue for graphics or present -> terminating" );
+        }
 
         // query for Vulkan 1.3 features
         vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = {
@@ -184,8 +227,24 @@ namespace VRE
         };
         
         m_Device = vk::raii::Device(m_PhysicalDevice, deviceCreateInfo);
+        //TODO: what if graphics and present queue are at same index? do we need to create both queues?
         m_GraphicsQueue = vk::raii::Queue( m_Device, graphicsIndex, 0 );
+        m_PresentQueue = vk::raii::Queue( m_Device, presentIndex, 0 );
 	}
+
+    void VulkanRenderApi::CreateSurface()
+    {
+        //TODO: Generalize this for other windowing systems
+		if (!VRE::Window::GetPtr()) {
+			throw std::runtime_error("Window not created before creating Vulkan surface!");
+		}
+		GLFWwindow* window = VRE::Window::GetPtr()->GetNativeWindow();
+        VkSurfaceKHR _surface;
+		if (glfwCreateWindowSurface(*m_Instance, window, nullptr, &_surface) != 0) {
+            throw std::runtime_error("failed to create window surface!");
+        }
+        m_Surface = vk::raii::SurfaceKHR(m_Instance, _surface);
+    }
 
 	void VulkanRenderApi::CleanUp()
 	{

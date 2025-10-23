@@ -13,6 +13,7 @@ namespace VRE
 
 		private:
 			void CreateInstance();
+			void CreateSurface();
 			void PickPhysicalDevice();
 			std::vector<const char*> GetRequiredExtensions(); 
 			void CreateLogicalDevice();
@@ -25,6 +26,9 @@ namespace VRE
 
 			vk::raii::Device m_Device = nullptr;
 			vk::raii::Queue m_GraphicsQueue = nullptr;
+			vk::raii::Queue m_PresentQueue = nullptr;
+
+			vk::raii::SurfaceKHR m_Surface = nullptr;
 
 			std::vector<const char*> m_RequiredDeviceExtensions = {
 				vk::KHRSwapchainExtensionName,
