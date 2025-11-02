@@ -1,0 +1,50 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "DebugAsanMacOS",
+      "displayName": "Debug With Asan Preset For MacOs",
+      "description": "Preset with debug build with address and thread sanitizer enable",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "ENABLE_MSAN" : "ON",
+        "ENABLE_TSAN" : "ON",
+        "ENABLE_COMPILER_WARNING" : "ON",
+        "CMAKE_CXX_STANDARD": "20",
+        "MACOS" : "ON",
+        "WINDOWS" : "OFF",
+        "GLFW3_LIBRARY" : "VRE/libs/glfw/macos/lib-arm64",
+        "GLFW3_INCLUDE_DIR" : "libs/glfw/macos/include"
+      }
+    },
+    {
+      "name": "DebugAsanWindows",
+      "displayName": "Debug With Asan Preset For MacOs",
+      "description": "Preset with debug build with address and thread sanitizer enable",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "ENABLE_MSAN" : "ON",
+        "ENABLE_TSAN" : "ON",
+        "ENABLE_COMPILER_WARNING" : "ON",
+        "CMAKE_CXX_STANDARD": "20",
+        "MACOS" : "OFF",
+        "WINDOWS" : "ON",
+        "GLFW3_LIBRARY" : "VRE/libs/glfw/windows/lib-vc2022",
+        "GLFW3_INCLUDE_DIR" : "libs/glfw/windows/include"
+      }
+    },
+    {
+      "name": "Shipping",
+      "displayName": "Shipping Preset",
+      "description": "Preset for shipping build",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "ENABLE_MSAN" : "OFF",
+        "ENABLE_TSAN" : "OFF",
+        "ENABLE_COMPILER_WARNING" : "ON",
+        "CMAKE_CXX_STANDARD": "20",
+        "ENABLE_CPP20_MODULE" : "ON"
+      }
+    }
+  ]
+}
