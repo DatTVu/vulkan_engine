@@ -44,6 +44,7 @@ namespace VRE
         CreateSurface();
 		PickPhysicalDevice(); 
         CreateLogicalDevice();
+		CreateSwapChain();
 	}
 
 	void VulkanRenderApi::CreateInstance()
@@ -164,15 +165,15 @@ namespace VRE
                         { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != static_cast<vk::QueueFlags>(0); } );
 		assert(graphicsQueueFamilyProperty != queueFamilyProperties.end() && "No graphics queue family found!");
         
-        auto graphicsIndex = static_cast<uint32_t>(std::distance(queueFamilyProperties.begin(), graphicsQueueFamilyProperty));
+        m_GraphicsQueueFamilyIndex = static_cast<uint32_t>(std::distance(queueFamilyProperties.begin(), graphicsQueueFamilyProperty));
 
         // determine a queueFamilyIndex that supports present
         // first check if the graphicsIndex is good enough
-        auto presentIndex = m_PhysicalDevice.getSurfaceSupportKHR(graphicsIndex, *m_Surface)
-                                       ? graphicsIndex
+        m_PresentQueueFamilyIndex = m_PhysicalDevice.getSurfaceSupportKHR(m_GraphicsQueueFamilyIndex, *m_Surface)
+                                       ? m_GraphicsQueueFamilyIndex
                                        : static_cast<uint32_t>(queueFamilyProperties.size());
 
-        if (presentIndex == queueFamilyProperties.size())
+        if (m_PresentQueueFamilyIndex == queueFamilyProperties.size())
         {
             // the graphicsIndex doesn't support present -> look for another family index that supports both
             // graphics and present
@@ -181,13 +182,13 @@ namespace VRE
                 if ((queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) && 
                     m_PhysicalDevice.getSurfaceSupportKHR( static_cast<uint32_t>(i), *m_Surface))
                 {
-                    graphicsIndex = static_cast<uint32_t>(i);
-                    presentIndex  = graphicsIndex;
+                    m_GraphicsQueueFamilyIndex = static_cast<uint32_t>(i);
+                    m_PresentQueueFamilyIndex  = m_GraphicsQueueFamilyIndex;
                     break;
                 }
             }
 
-            if (presentIndex == queueFamilyProperties.size())
+            if (m_PresentQueueFamilyIndex == queueFamilyProperties.size())
             {
                 // there's nothing like a single family index that supports both graphics and present -> look for another
                 // family index that supports present
@@ -195,14 +196,14 @@ namespace VRE
                 {
                     if (m_PhysicalDevice.getSurfaceSupportKHR(static_cast<uint32_t>(i), *m_Surface))
                     {
-                        presentIndex = static_cast<uint32_t>(i);
+                        m_PresentQueueFamilyIndex = static_cast<uint32_t>(i);
                         break;
                     }
                 }
             }
         }
 
-        if ((graphicsIndex == queueFamilyProperties.size()) || (presentIndex == queueFamilyProperties.size()))
+        if ((m_GraphicsQueueFamilyIndex == queueFamilyProperties.size()) || (m_PresentQueueFamilyIndex == queueFamilyProperties.size()))
         {
             throw std::runtime_error( "Could not find a queue for graphics or present -> terminating" );
         }
@@ -217,7 +218,7 @@ namespace VRE
         // create a Device
         float queuePriority = 0.0f;
         
-        vk::DeviceQueueCreateInfo deviceQueueCreateInfo { .queueFamilyIndex = graphicsIndex, .queueCount = 1, .pQueuePriorities = &queuePriority };
+        vk::DeviceQueueCreateInfo deviceQueueCreateInfo { .queueFamilyIndex = m_GraphicsQueueFamilyIndex, .queueCount = 1, .pQueuePriorities = &queuePriority };
 
         vk::DeviceCreateInfo deviceCreateInfo{
             .pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
@@ -229,8 +230,8 @@ namespace VRE
         
         m_Device = vk::raii::Device(m_PhysicalDevice, deviceCreateInfo);
         //TODO: what if graphics and present queue are at same index? do we need to create both queues?
-        m_GraphicsQueue = vk::raii::Queue( m_Device, graphicsIndex, 0 );
-        m_PresentQueue = vk::raii::Queue( m_Device, presentIndex, 0 );
+        m_GraphicsQueue = vk::raii::Queue( m_Device, m_GraphicsQueueFamilyIndex, 0 );
+        m_PresentQueue = vk::raii::Queue( m_Device, m_PresentQueueFamilyIndex, 0 );
 	}
 
     void VulkanRenderApi::CreateSurface()
@@ -241,14 +242,112 @@ namespace VRE
 		}
 		GLFWwindow* window = VRE::Window::GetPtr()->GetNativeWindow();
         VkSurfaceKHR _surface;
-		if (glfwCreateWindowSurface(*m_Instance, window, nullptr, &_surface) != 0) {
+		if (glfwCreateWindowSurface(*m_Instance, window, nullptr, &_surface) != 0)
+		{
             throw std::runtime_error("failed to create window surface!");
         }
         m_Surface = vk::raii::SurfaceKHR(m_Instance, _surface);
     }
 
+    void VulkanRenderApi::CreateSwapChain()
+    {
+		auto surfaceCapabilities = m_PhysicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
+		//TO:DO: move surfaceFormat to member variable?
+		ChooseSwapSurfaceFormat(m_PhysicalDevice.getSurfaceFormatsKHR(m_Surface));
+		ChooseSwapExtent(surfaceCapabilities);
+		auto minImageCount = std::max( 3u, surfaceCapabilities.minImageCount );
+		minImageCount = ( surfaceCapabilities.maxImageCount > 0 && minImageCount > surfaceCapabilities.maxImageCount ) ?
+			surfaceCapabilities.maxImageCount : minImageCount;
+		m_ImageCount = surfaceCapabilities.minImageCount + 1;
+		if (surfaceCapabilities.maxImageCount > 0 && m_ImageCount > surfaceCapabilities.maxImageCount)
+		{
+			m_ImageCount = surfaceCapabilities.maxImageCount;
+		}
+
+		vk::SwapchainCreateInfoKHR swapChainCreateInfo {
+			.flags = vk::SwapchainCreateFlagsKHR(),
+			.surface = m_Surface,
+			.minImageCount = minImageCount,
+			.imageFormat = m_SwapChainSurfaceFormat.format,
+			.imageColorSpace = m_SwapChainSurfaceFormat.colorSpace,
+			.imageExtent = m_SwapChainExtent,
+			.imageArrayLayers = 1,
+			.imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
+			.imageSharingMode = vk::SharingMode::eExclusive,
+			.preTransform = surfaceCapabilities.currentTransform,
+			.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			.presentMode = ChooseSwapPresentMode(m_PhysicalDevice.getSurfacePresentModesKHR(m_Surface)),
+			.clipped = true,
+			.oldSwapchain = VK_NULL_HANDLE
+		};
+
+		uint32_t queueFamilyIndices[] = {m_GraphicsQueueFamilyIndex, m_PresentQueueFamilyIndex};
+		if (m_GraphicsQueueFamilyIndex != m_PresentQueueFamilyIndex)
+		{
+			swapChainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
+			swapChainCreateInfo.queueFamilyIndexCount = 2;
+			swapChainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+		}
+		else
+		{
+			swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
+			swapChainCreateInfo.queueFamilyIndexCount = 0; // Optional
+			swapChainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
+		}
+
+		m_SwapChain = vk::raii::SwapchainKHR(m_Device, swapChainCreateInfo);
+		m_SwapChainImages = m_SwapChain.getImages();
+
+	}
+
+    void VulkanRenderApi::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
+    {
+	    for (const auto& availableFormat : availableFormats)
+	    {
+            if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+            {
+                m_SwapChainSurfaceFormat = availableFormat;
+            	return;
+            }
+	    }
+
+        m_SwapChainSurfaceFormat = availableFormats[0];
+	}
+
+    vk::PresentModeKHR VulkanRenderApi::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes)
+    {
+	    for (const auto& availablePresentMode : availablePresentModes)
+	    {
+			if (availablePresentMode == vk::PresentModeKHR::eMailbox)
+			{
+				return availablePresentMode;
+			}
+	    }
+	    return vk::PresentModeKHR::eFifo;
+	}
+
+	void VulkanRenderApi::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+	{
+		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		{
+			m_SwapChainExtent = capabilities.currentExtent;
+			return;
+		}
+
+		if (!VRE::Window::GetPtr())
+		{
+			throw std::runtime_error("Window not created before creating Vulkan surface!");
+		}
+
+		int width, height;
+		glfwGetFramebufferSize(VRE::Window::GetPtr()->GetNativeWindow(), &width, &height);
+		m_SwapChainExtent =  {
+			std::clamp<uint32_t>(width, capabilities.minImageExtent.height, capabilities.maxImageExtent.width),
+			std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
+		};
+	}
+
 	void VulkanRenderApi::CleanUp()
 	{
-
 	}
 }
