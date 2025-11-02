@@ -17,7 +17,7 @@ if(ENABLE_CPP20_MODULE)
     # Add MSVC-specific compiler options for proper C++ module support
     if(MSVC)
         target_compile_options(VulkanCppModule PRIVATE
-        /std:c++latest      # Use latest C++ standard for better module support
+        /std:c++20      # Use latest C++ standard for better module support
         /permissive-        # Standards conformance mode
         /Zc:__cplusplus     # Enable correct __cplusplus macro
         /EHsc               # Enable C++ exception handling
@@ -51,6 +51,7 @@ endif()
 #Link vulkan to VRE
 add_library(VRE)
 target_link_libraries(VRE PRIVATE Vulkan::cppm)
+target_compile_features(VRE PUBLIC cxx_std_20)
 
 if(MACOS)
     message("MacOS")

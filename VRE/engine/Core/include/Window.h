@@ -4,7 +4,7 @@
 #include <string>
 #include <Singleton.h>
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace VRE {
 	struct WindowInfo {
