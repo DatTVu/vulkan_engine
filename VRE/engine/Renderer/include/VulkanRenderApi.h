@@ -18,10 +18,11 @@ namespace VRE
 			std::vector<const char*> GetRequiredExtensions(); 
 			void CreateLogicalDevice();
 			void CreateSwapChain();
+			void CreateImageViews();
 			void ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 			vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 			void ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-		
+
 		private:
 			vk::raii::Context m_Context;
 			vk::raii::Instance m_Instance = nullptr;

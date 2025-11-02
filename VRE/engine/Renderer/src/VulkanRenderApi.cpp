@@ -45,6 +45,7 @@ namespace VRE
 		PickPhysicalDevice(); 
         CreateLogicalDevice();
 		CreateSwapChain();
+		CreateImageViews();
 	}
 
 	void VulkanRenderApi::CreateInstance()
@@ -297,7 +298,23 @@ namespace VRE
 
 		m_SwapChain = vk::raii::SwapchainKHR(m_Device, swapChainCreateInfo);
 		m_SwapChainImages = m_SwapChain.getImages();
+	}
 
+	void VulkanRenderApi::CreateImageViews()
+	{
+		m_SwapChainImageViews.clear();
+		vk::ImageViewCreateInfo imageViewCreateInfo {
+			.viewType = vk::ImageViewType::e2D,
+			.format = m_SwapChainSurfaceFormat.format,
+			.subresourceRange = { vk::ImageAspectFlagBits::eColor,
+				0, 1, 0, 1}
+		};
+
+		for (auto image : m_SwapChainImages)
+		{
+			imageViewCreateInfo.image = image;
+			m_SwapChainImageViews.emplace_back(m_Device, imageViewCreateInfo);
+		}
 	}
 
     void VulkanRenderApi::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
