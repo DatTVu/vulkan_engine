@@ -23,6 +23,8 @@ else()
     set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # clear it
 endif()
 
+add_executable(demo)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     if(ENABLE_COMPILER_WARNING)
         add_compile_options(-Wall -Wextra -Werror)
@@ -49,7 +51,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endif()
 endif()
 
-add_executable(demo)
 add_subdirectory(VRE)
 
 target_sources(demo

@@ -1,4 +1,0 @@
-D:/vulkan_engine/build/CMakeFiles/demo.dir
-D:/vulkan_engine/build/CMakeFiles/ALL_BUILD.dir
-D:/vulkan_engine/build/CMakeFiles/ZERO_CHECK.dir
-D:/vulkan_engine/build/VRE/CMakeFiles/VRE.dir

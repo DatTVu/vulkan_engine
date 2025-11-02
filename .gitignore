@@ -41,5 +41,19 @@
 *.dwo
 
 # Visual Studio cache/options directory
-.vs/
 VRE/VRE/
+
+# build folder
+build/
+build/*
+
+# Clion
+.idea/
+.idea/*
+
+# visual studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
