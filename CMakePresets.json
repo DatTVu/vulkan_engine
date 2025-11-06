@@ -8,7 +8,7 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "ENABLE_MSAN" : "ON",
-        "ENABLE_TSAN" : "ON",
+        "ENABLE_TSAN" : "OFF",
         "ENABLE_COMPILER_WARNING" : "ON",
         "CMAKE_CXX_STANDARD": "20",
         "MACOS" : "ON",
@@ -24,7 +24,7 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "ENABLE_MSAN" : "ON",
-        "ENABLE_TSAN" : "ON",
+        "ENABLE_TSAN" : "OFF",
         "ENABLE_COMPILER_WARNING" : "ON",
         "CMAKE_CXX_STANDARD": "20",
         "MACOS" : "OFF",

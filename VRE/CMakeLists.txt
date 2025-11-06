@@ -55,16 +55,21 @@ add_library(VRE
 target_link_libraries(VRE PRIVATE Vulkan::cppm)
 target_compile_features(VRE PUBLIC cxx_std_20)
 
+
 if(MACOS)
-    message("MacOS")
+    target_link_libraries(VRE PRIVATE
+            "-framework Cocoa"
+            "-framework OpenGL"
+            "-framework IOKit"
+            "-framework CoreFoundation"
+    )
 elseif(WINDOWS)
     message("Windows")
 endif()
-    
 
 #glfw lib
-target_include_directories(VRE PRIVATE ${GLFW3_INCLUDE_DIR})
-target_link_libraries(VRE PRIVATE glfw3)
+target_link_libraries(VRE PUBLIC glfw3)
+target_include_directories(VRE PUBLIC ${GLFW3_INCLUDE_DIR})
 
 #glm
 target_include_directories(VRE PRIVATE libs/glm)

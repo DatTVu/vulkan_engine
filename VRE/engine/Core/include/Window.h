@@ -14,7 +14,7 @@ namespace VRE {
 
 		WindowInfo() = default;
 		WindowInfo(const std::string& tittle, uint32_t width, uint32_t height)
-			: Title(tittle), Width(width), Height(height)
+			: Width(width), Height(height), Title(tittle)
 		{}
 	};
 
