@@ -317,6 +317,11 @@ namespace VRE
 		}
 	}
 
+	void VulkanRenderApi::CreateGraphicsPipeline()
+	{
+
+	}
+
     void VulkanRenderApi::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
     {
 	    for (const auto& availableFormat : availableFormats)

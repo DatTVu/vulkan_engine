@@ -49,7 +49,9 @@ else()
 endif()    
 
 #Link vulkan to VRE
-add_library(VRE)
+add_library(VRE
+        engine/Renderer/include/VulkanVertexBuffer.h
+        engine/Renderer/src/VulkanVertexBuffer.cpp)
 target_link_libraries(VRE PRIVATE Vulkan::cppm)
 target_compile_features(VRE PUBLIC cxx_std_20)
 

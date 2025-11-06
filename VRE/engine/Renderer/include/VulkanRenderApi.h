@@ -19,6 +19,8 @@ namespace VRE
 			void CreateLogicalDevice();
 			void CreateSwapChain();
 			void CreateImageViews();
+			void CreateGraphicsPipeline();
+
 			void ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 			vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 			void ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
