@@ -14,7 +14,8 @@
         "MACOS" : "ON",
         "WINDOWS" : "OFF",
         "GLFW3_LIBRARY" : "VRE/libs/glfw/macos/lib-arm64",
-        "GLFW3_INCLUDE_DIR" : "libs/glfw/macos/include"
+        "GLFW3_INCLUDE_DIR" : "libs/glfw/macos/include",
+        "CMAKE_BUILD_TYPE" : "Debug"
       }
     },
     {
