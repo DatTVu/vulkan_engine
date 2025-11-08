@@ -1,8 +1,0 @@
-//
-// Created by dtvut on 11/2/2025.
-//
-
-#ifndef DEMO_VULKANVERTEXBUFFER_H
-#define DEMO_VULKANVERTEXBUFFER_H
-
-#endif //DEMO_VULKANVERTEXBUFFER_H

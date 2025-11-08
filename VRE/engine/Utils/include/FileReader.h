@@ -8,7 +8,7 @@ namespace VRE
 	class FileReader
 	{
 		public:
-			static void ReadShaderFile(const std::string& fileName);
+			static std::vector<char> ReadShaderFile(const std::string& fileName);
 	};
 
 }

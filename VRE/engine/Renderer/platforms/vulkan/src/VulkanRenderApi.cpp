@@ -5,10 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-#include <cstring>
 #include <ranges>
-#include <cstdlib>
-#include <memory>
 #include <algorithm>
 
 #include <vulkan/vulkan.hpp>
@@ -31,6 +28,8 @@ namespace VRE
         "VK_LAYER_KHRONOS_validation"
     };
 
+	const std::string k_VulkanShaderPath = {"../VRE/slang.spv"};
+
     #ifdef NDEBUG
     constexpr bool s_bEnableValidationLayers = false;
     #else
@@ -46,6 +45,7 @@ namespace VRE
         CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
+		CreateShaderModule();
 		CreateGraphicsPipeline();
 	}
 
@@ -320,7 +320,76 @@ namespace VRE
 
 	void VulkanRenderApi::CreateGraphicsPipeline()
 	{
-		FileReader::ReadShaderFile("../VRE/slang.spv");
+		if (m_ShaderModule != nullptr)
+		{
+			vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = m_ShaderModule, .pName = "vertMain" };
+
+			vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = m_ShaderModule, .pName = "fragMain" };
+
+			vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+			//TO-DO: move input assembly to a member variable and config primitive topology
+			vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+
+			vk::PipelineInputAssemblyStateCreateInfo inputAssembly = { .topology = vk::PrimitiveTopology::eTriangleList };
+			vk::PipelineViewportStateCreateInfo viewportState{ .viewportCount = 1, .scissorCount = 1 };
+			vk::Rect2D rect = { vk::Offset2D{0,0}, m_SwapChainExtent };
+
+			vk::PipelineRasterizationStateCreateInfo rasterizer{
+				.depthClampEnable = vk::False, .rasterizerDiscardEnable = vk::False,
+				.polygonMode = vk::PolygonMode::eFill, .cullMode = vk::CullModeFlagBits::eBack,
+				.frontFace = vk::FrontFace::eClockwise, .depthBiasEnable = vk::False,
+				.depthBiasSlopeFactor = 1.0f, .lineWidth = 1.0f
+			};
+
+			vk::PipelineMultisampleStateCreateInfo multisampling{.rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False};
+
+			vk::PipelineColorBlendAttachmentState colorBlendAttachment{ .blendEnable = vk::False,
+			.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+			};
+
+			vk::PipelineColorBlendStateCreateInfo colorBlending{.logicOpEnable = vk::False, .logicOp =  vk::LogicOp::eCopy, .attachmentCount = 1, .pAttachments =  &colorBlendAttachment };
+
+			//TO-DO: read about dynamic state. what can be config?
+			vk::PipelineDynamicStateCreateInfo dynamicState = {
+				.dynamicStateCount = static_cast<uint32_t>(m_DynamicStates.size()),
+				.pDynamicStates = m_DynamicStates.data()
+			};
+
+			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{  .setLayoutCount = 0, .pushConstantRangeCount = 0 };
+
+			m_PipelineLayout = vk::raii::PipelineLayout(m_Device, pipelineLayoutInfo);
+
+			vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain = {
+				{.stageCount = 2,
+				  .pStages = shaderStages,
+				  .pVertexInputState = &vertexInputInfo,
+				  .pInputAssemblyState = &inputAssembly,
+				  .pViewportState = &viewportState,
+				  .pRasterizationState = &rasterizer,
+				  .pMultisampleState = &multisampling,
+				  .pColorBlendState = &colorBlending,
+				  .pDynamicState = &dynamicState,
+				  .layout = m_PipelineLayout,
+				  .renderPass = nullptr },
+				{.colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainSurfaceFormat.format }
+			};
+
+			m_GraphicsPipeline =  vk::raii::Pipeline(m_Device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
+		}
+	}
+
+	void VulkanRenderApi::CreateShaderModule()
+	{
+		//TO-DO: inject cmake shader build dir into here
+		m_ShaderCode = FileReader::ReadShaderFile(k_VulkanShaderPath);
+
+		vk::ShaderModuleCreateInfo createInfo {
+			.codeSize = m_ShaderCode.size() * sizeof(char),
+			.pCode = reinterpret_cast<const uint32_t*>(m_ShaderCode.data())
+		};
+
+		m_ShaderModule = vk::raii::ShaderModule(m_Device, createInfo);
 	}
 
     void VulkanRenderApi::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
