@@ -1,6 +1,6 @@
 //#define VULKAN_HPP_NO_CONSTRUCTORS
 
-#include <VulkanRenderApi.h>
+#include <../include/VulkanRenderApi.h>
 #include <assert.h>
 #include <iostream>
 #include <stdexcept>
@@ -11,8 +11,8 @@
 #include <memory>
 #include <algorithm>
 
-
 #include <vulkan/vulkan.hpp>
+#include <FileReader.h>
 
 #ifdef __INTELLISENSE__
 #include <vulkan/vulkan_raii.hpp>
@@ -46,6 +46,7 @@ namespace VRE
         CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
+		CreateGraphicsPipeline();
 	}
 
 	void VulkanRenderApi::CreateInstance()
@@ -319,7 +320,7 @@ namespace VRE
 
 	void VulkanRenderApi::CreateGraphicsPipeline()
 	{
-
+		FileReader::ReadShaderFile("../VRE/slang.spv");
 	}
 
     void VulkanRenderApi::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)

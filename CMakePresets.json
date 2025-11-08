@@ -10,6 +10,7 @@
         "ENABLE_MSAN" : "ON",
         "ENABLE_TSAN" : "OFF",
         "ENABLE_COMPILER_WARNING" : "ON",
+        "ENABLE_COMPILER_WARNING_AS_ERROR" : "OFF",
         "CMAKE_CXX_STANDARD": "20",
         "MACOS" : "ON",
         "WINDOWS" : "OFF",
@@ -27,11 +28,13 @@
         "ENABLE_MSAN" : "ON",
         "ENABLE_TSAN" : "OFF",
         "ENABLE_COMPILER_WARNING" : "ON",
+        "ENABLE_COMPILER_WARNING_AS_ERROR" : "OFF",
         "CMAKE_CXX_STANDARD": "20",
         "MACOS" : "OFF",
         "WINDOWS" : "ON",
         "GLFW3_LIBRARY" : "VRE/libs/glfw/windows/lib-vc2022",
-        "GLFW3_INCLUDE_DIR" : "libs/glfw/windows/include"
+        "GLFW3_INCLUDE_DIR" : "libs/glfw/windows/include",
+        "CMAKE_BUILD_TYPE" : "Debug"
       }
     },
     {

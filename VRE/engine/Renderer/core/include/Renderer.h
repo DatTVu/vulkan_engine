@@ -4,8 +4,10 @@
 #include <RenderApi.h>
 #include <Singleton.h>
 
-namespace VRE {
-	class Renderer : public Singleton<Renderer>{
+namespace VRE
+{
+	class Renderer : public Singleton<Renderer>
+	{
 		public:
 			void Run();
 			void Init();

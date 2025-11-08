@@ -7,7 +7,7 @@
 
 namespace VRE {
 
-	template<> Renderer* Singleton<Renderer>::s_Instance = 0;
+	template<> Renderer* Singleton<Renderer>::s_Instance = nullptr;
 
 	void Renderer::Run() 
 	{
