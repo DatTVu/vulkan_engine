@@ -11,8 +11,7 @@ namespace VRE
 		public:
 			void Run();
 			void Init();
-
-		private:
+			void DrawFrame();
 			void CleanUp();
 
 		private:

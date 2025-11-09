@@ -15,6 +15,7 @@ namespace VRE
 		m_Window = std::make_unique<Window>(WindowInfo(s_WINDOW_TITLE, s_WINDOW_WIDTH, s_WINDOW_HEIGHT));
 		m_Renderer = std::make_unique<Renderer>();
 		m_Renderer->Init();
+		m_Renderer->Run();
 	}
 
 	void Application::Run()
@@ -26,10 +27,12 @@ namespace VRE
 	
 	void Application::MainLoop()
 	{
-		while (!glfwWindowShouldClose(m_Window->GetNativeWindow())) {
+		while (!glfwWindowShouldClose(m_Window->GetNativeWindow()))
+		{
 			glfwPollEvents();
-			m_Renderer->Run();
+			m_Renderer->DrawFrame();
 		}
+		m_Renderer->CleanUp();
 	}
 
 	void Application::Shutdown()

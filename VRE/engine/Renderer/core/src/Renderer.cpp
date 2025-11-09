@@ -9,12 +9,12 @@ namespace VRE {
 
 	template<> Renderer* Singleton<Renderer>::s_Instance = nullptr;
 
-	void Renderer::Run() 
+	void Renderer::Run()
 	{
-		CleanUp();
+
 	}
 
-	void Renderer::Init() 
+	void Renderer::Init()
 	{
 #ifdef USE_VULKAN_RENDER_API
 		m_RenderApi = std::make_unique<VulkanRenderApi>();
@@ -24,8 +24,14 @@ namespace VRE {
 		m_RenderApi->Init();
 	}
 
-	void Renderer::CleanUp() 
+	void Renderer::DrawFrame()
 	{
-		
+		m_RenderApi->DrawFrame();
+	}
+
+
+	void Renderer::CleanUp()
+	{
+		m_RenderApi->CleanUp();
 	}
 }

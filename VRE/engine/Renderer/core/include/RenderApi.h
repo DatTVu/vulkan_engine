@@ -18,6 +18,7 @@ namespace VRE
 			
 			virtual void Init() = 0;
 			virtual void CleanUp() = 0;
+			virtual void DrawFrame() = 0;
 			API GetAPI() { return m_API; }
 
 		protected:
